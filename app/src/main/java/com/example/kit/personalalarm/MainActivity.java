@@ -1,8 +1,13 @@
 package com.example.kit.personalalarm;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,12 +39,24 @@ public class MainActivity extends AppCompatActivity {
     private Set<BluetoothDevice> pairedDevices;
     ImageView icon;
     Switch emgencyCall;
-    EditText editCall;
+    EditText editCall,tel;
     Button buttonCall;
+    Switch led,sound,call,msg;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
+
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 1);
+        }
+        led = (Switch) findViewById(R.id.led);
+        sound = (Switch) findViewById(R.id.call);
+        call = (Switch) findViewById(R.id.call);
+        tel = (EditText) findViewById(R.id.tel);
+        tel.setEnabled(false);
         icon = (ImageView) findViewById(R.id.icon);
         emgencyCall = (Switch) findViewById(R.id.switch3);
         emgencyCall.setChecked(true);
@@ -58,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                     editCall.selectAll();
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.showSoftInput(editCall, InputMethodManager.SHOW_IMPLICIT);
+
                 }else
                 {
                     buttonCall.setText("EDIT");
@@ -67,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
                         fOut.write(editCall.getText().toString().getBytes());
                         fOut.close();
                         Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
+                        call(editCall.getText().toString());
                     }
                     catch (IOException e) {
                         Log.e("Exception", "File write failed: " + e.toString());
@@ -127,6 +146,25 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void call(String phoneNumber) {
+        {
+            Intent callIntent = new Intent(Intent.ACTION_CALL);
+            callIntent.setData(Uri.parse("tel:"+phoneNumber));
+            callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            if(ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED)
+            {
+                try {
+                if (callIntent.resolveActivity(getPackageManager()) != null)
+                    startActivity(callIntent);
+
+                } catch (Exception ex) {
+                Toast.makeText(getApplicationContext(), "Error", Toast.LENGTH_SHORT).show();
+                ex.printStackTrace();
+                }
+            }
+
+        }
+    }
 
 
 }
