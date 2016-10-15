@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -17,10 +18,15 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.widget.Toast;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Set;
 
 import static android.R.attr.button;
+import static android.R.attr.data;
 import static java.sql.Types.NULL;
 
 public class MainActivity extends AppCompatActivity {
@@ -56,9 +62,33 @@ public class MainActivity extends AppCompatActivity {
                 {
                     buttonCall.setText("EDIT");
                     editCall.setEnabled(false);
+                    try {
+                        FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+                        fOut.write(editCall.getText().toString().getBytes());
+                        fOut.close();
+                        Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
+                    }
+                    catch (IOException e) {
+                        Log.e("Exception", "File write failed: " + e.toString());
+                    }
                 }
             }
         });
+
+        try{
+            FileInputStream fin = openFileInput("config");
+            int c;
+            String temp="";
+
+            while( (c = fin.read()) != -1){
+                temp = temp + Character.toString((char)c);
+            }
+            editCall.setText(temp);
+        }
+        catch(Exception e){
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter == null)
         {
@@ -97,16 +127,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    public native String stringFromJNI();
-
-    // Used to load the 'native-lib' library on application startup.
-    static {
-        System.loadLibrary("native-lib");
-    }
 
 
 }
