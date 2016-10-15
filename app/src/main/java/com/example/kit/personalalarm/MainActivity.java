@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -34,7 +37,9 @@ import static android.R.attr.button;
 import static android.R.attr.data;
 import static java.sql.Types.NULL;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LocationListener{
+    protected LocationManager locationManager;
+    protected LocationListener locationListener;
     private BluetoothAdapter bluetoothAdapter;
     private Set<BluetoothDevice> pairedDevices;
     ImageView icon;
@@ -47,18 +52,35 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
-
         if (permissionCheck != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 1);
         }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+        }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 3);
+        }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 4);
+        }
+        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        getLocation();
+
         led = (Switch) findViewById(R.id.led);
         sound = (Switch) findViewById(R.id.call);
         call = (Switch) findViewById(R.id.call);
         tel = (EditText) findViewById(R.id.tel);
         tel.setEnabled(false);
         icon = (ImageView) findViewById(R.id.icon);
-        emgencyCall = (Switch) findViewById(R.id.switch3);
+        emgencyCall = (Switch) findViewById(R.id.call);
         emgencyCall.setChecked(true);
         editCall = (EditText) findViewById(R.id.editcall);
         editCall.setEnabled(false);
@@ -166,5 +188,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void getLocation()
+    {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                &&ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        try {
+            System.out.print(location.getLatitude() + "   " + location.getLongitude());
+        }catch(Exception e){e.printStackTrace();};
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String provider) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+    }
 }
