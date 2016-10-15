@@ -116,8 +116,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
                 }else
                 {
+                    editCall.setSelectAllOnFocus(false);
                     buttonCall.setText("EDIT");
                     editCall.setEnabled(false);
+                    if(editCall.getText().toString().isEmpty())
+                        editCall.setText("999");
                     try {
                         FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
                         fOut.write(editCall.getText().toString().getBytes());
