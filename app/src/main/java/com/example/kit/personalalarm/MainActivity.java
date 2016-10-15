@@ -43,10 +43,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private BluetoothAdapter bluetoothAdapter;
     private Set<BluetoothDevice> pairedDevices;
     ImageView icon;
-    Switch emgencyCall;
     EditText editCall,tel;
     Button buttonCall;
-    Switch led,sound,call,msg;
+    Switch led,sound,emgencyCall,msg;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,15 +74,32 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         getLocation();
 
         led = (Switch) findViewById(R.id.led);
-        sound = (Switch) findViewById(R.id.call);
-        call = (Switch) findViewById(R.id.call);
+        sound = (Switch) findViewById(R.id.sound);
+        emgencyCall = (Switch) findViewById(R.id.call);
         tel = (EditText) findViewById(R.id.tel);
         tel.setEnabled(false);
         icon = (ImageView) findViewById(R.id.icon);
-        emgencyCall = (Switch) findViewById(R.id.call);
+        icon.setImageResource(R.drawable.connected);
         emgencyCall.setChecked(true);
         editCall = (EditText) findViewById(R.id.editcall);
         editCall.setEnabled(false);
+        emgencyCall.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                if(!emgencyCall.isChecked())
+                {
+                    editCall.setVisibility(View.INVISIBLE);
+                    tel.setVisibility(View.INVISIBLE);
+                    buttonCall.setVisibility(View.INVISIBLE);
+                }else
+                {
+                    editCall.setVisibility(View.VISIBLE);
+                    tel.setVisibility(View.VISIBLE);
+                    buttonCall.setVisibility(View.VISIBLE);
+                }
+            }
+        });
         buttonCall = (Button) findViewById(R.id.buttoncall);
         buttonCall.setOnClickListener(new View.OnClickListener(){
             @Override
