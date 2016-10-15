@@ -41,7 +41,7 @@
         android:layout_alignBottom="@id/switch3"
         android:layout_alignTop="@id/switch3"
         android:text="Emergency Call"
-        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
         android:textSize="24sp"
         android:id="@+id/emgCt"/>
 
@@ -51,7 +51,7 @@
         android:layout_alignBottom="@id/switch1"
         android:layout_alignTop="@id/switch1"
         android:text="LED"
-        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
         android:textSize="24sp"
         android:id="@+id/ledt"/>
 
@@ -60,7 +60,8 @@
         android:layout_height="wrap_content"
         android:layout_above="@id/ledt"
         android:src="@drawable/disconnected"
-        android:id="@+id/icon"/>
+        android:id="@+id/icon"
+        android:layout_centerHorizontal="true"/>
 
 
 
@@ -70,7 +71,25 @@
         android:layout_alignBottom="@id/switch2"
         android:layout_alignTop="@id/switch2"
         android:text="Sound"
-        android:layout_centerInParent="true"
+        android:layout_centerHorizontal="true"
         android:textSize="24sp"
         android:id="@+id/soundt"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editcall"
+        android:text="999"
+        android:layout_below="@+id/emgCt"
+        android:layout_centerHorizontal="true"
+        android:textSize="10sp"
+        android:inputType="phone"/>
+    <Button
+        android:layout_width="60dp"
+        android:layout_height="30dp"
+        android:id="@+id/buttoncall"
+        android:text="Edit"
+        android:textSize="10sp"
+        android:layout_below="@id/switch3"
+        android:layout_alignStart="@id/switch3"/>
 </RelativeLayout>

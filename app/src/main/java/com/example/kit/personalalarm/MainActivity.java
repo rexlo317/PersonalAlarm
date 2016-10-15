@@ -1,10 +1,15 @@
 package com.example.kit.personalalarm;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -15,6 +20,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Set;
 
+import static android.R.attr.button;
 import static java.sql.Types.NULL;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     private Set<BluetoothDevice> pairedDevices;
     ImageView icon;
     Switch emgencyCall;
+    EditText editCall;
+    Button buttonCall;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,20 +37,41 @@ public class MainActivity extends AppCompatActivity {
         icon = (ImageView) findViewById(R.id.icon);
         emgencyCall = (Switch) findViewById(R.id.switch3);
         emgencyCall.setChecked(true);
-
+        editCall = (EditText) findViewById(R.id.editcall);
+        editCall.setEnabled(false);
+        buttonCall = (Button) findViewById(R.id.buttoncall);
+        buttonCall.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                if(!editCall.isEnabled())
+                {
+                    buttonCall.setText("DONE");
+                    editCall.setEnabled(true);
+                    editCall.requestFocus();
+                    editCall.selectAll();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(editCall, InputMethodManager.SHOW_IMPLICIT);
+                }else
+                {
+                    buttonCall.setText("EDIT");
+                    editCall.setEnabled(false);
+                }
+            }
+        });
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter == null)
         {
-            new AlertDialog.Builder(this)
-                    .setTitle("Not compatible")
-                    .setMessage("Your phone does not support Bluetooth")
-                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            System.exit(0);
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
+//            new AlertDialog.Builder(this)
+//                    .setTitle("Not compatible")
+//                    .setMessage("Your phone does not support Bluetooth")
+//                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            System.exit(0);
+//                        }
+//                    })
+//                    .setIcon(android.R.drawable.ic_dialog_alert)
+//                    .show();
 
         }
         else
@@ -78,4 +107,6 @@ public class MainActivity extends AppCompatActivity {
     static {
         System.loadLibrary("native-lib");
     }
+
+
 }
