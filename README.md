@@ -1,4 +1,4 @@
-, pu# PersonalAlarm
+PersonalAlarm
 EE3274 - Design Project
 
 Current State
