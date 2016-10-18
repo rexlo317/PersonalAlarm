@@ -14,6 +14,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -69,6 +70,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         if (permissionCheck != PackageManager.PERMISSION_GRANTED)
         {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 4);
+        }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS);
+        if(permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS} , 5);
         }
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         getLocation();
@@ -126,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         fOut.write(editCall.getText().toString().getBytes());
                         fOut.close();
                         Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
-                        call(editCall.getText().toString());
+                        sendSMS(editCall.getText().toString(),"test");
                     }
                     catch (IOException e) {
                         Log.e("Exception", "File write failed: " + e.toString());
@@ -205,6 +211,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             }
 
         }
+    }
+
+    public void sendSMS(String phoneNumber, String msg)
+    {// The number on which you want to send SMS
+        SmsManager sms = SmsManager.getDefault();
+        sms.sendTextMessage(phoneNumber, null, msg, null, null);
     }
 
     private void getLocation()
