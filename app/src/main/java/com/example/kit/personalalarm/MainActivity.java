@@ -78,7 +78,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         }
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         getLocation();
-
+        msg = (Switch) findViewById(R.id.sms);
+        msg.setChecked(true);
         led = (Switch) findViewById(R.id.led);
         sound = (Switch) findViewById(R.id.sound);
         emgencyCall = (Switch) findViewById(R.id.call);
