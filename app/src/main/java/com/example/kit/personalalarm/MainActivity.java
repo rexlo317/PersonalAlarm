@@ -215,8 +215,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
     public void sendSMS(String phoneNumber, String msg)
     {// The number on which you want to send SMS
-        SmsManager sms = SmsManager.getDefault();
-        sms.sendTextMessage(phoneNumber, null, msg, null, null);
+        try {
+            SmsManager sms = SmsManager.getDefault();
+            sms.sendTextMessage(phoneNumber, null, msg, null, null);
+            Toast.makeText(getApplicationContext(), "Message sent", Toast.LENGTH_SHORT).show();
+        }catch(Exception ex)
+        {
+            Toast.makeText(getApplicationContext(), "Message Cannot Send", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void getLocation()
