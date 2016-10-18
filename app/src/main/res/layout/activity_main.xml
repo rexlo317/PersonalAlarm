@@ -5,12 +5,19 @@
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.example.kit.personalalarm.MainActivity">
-
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/ledt">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/disconnected"
+            android:id="@+id/icon"
+            android:layout_centerHorizontal="true"
+            android:background="@color/colorPrimaryDark"/>
+    </RelativeLayout>
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,16 +33,11 @@
         android:layout_alignTop="@id/led"
         android:text="LED"
         android:layout_centerHorizontal="true"
-        android:textSize="24sp"
+        android:layout_centerVertical="true"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/ledt"/>
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/ledt"
-        android:src="@drawable/disconnected"
-        android:id="@+id/icon"
-        android:layout_centerHorizontal="true"/>
+
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -52,7 +54,7 @@
         android:text="999"
         android:layout_below="@+id/emgCt"
         android:layout_centerHorizontal="true"
-        android:textSize="10sp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:inputType="phone"/>
     <EditText
         android:layout_marginTop="0dp"
@@ -62,7 +64,7 @@
         android:text="Tel:"
         android:layout_below="@+id/emgCt"
         android:layout_toLeftOf="@id/editcall"
-        android:textSize="10sp"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:inputType="phone"/>
     <Switch
         android:layout_width="wrap_content"
@@ -73,18 +75,19 @@
         android:layout_alignStart="@id/sound" />
     <Button
         android:layout_width="60dp"
-        android:layout_height="30dp"
+        android:layout_height="35dp"
         android:id="@+id/buttoncall"
         android:text="Edit"
         android:textSize="10sp"
         android:layout_below="@id/call"
-        android:layout_toLeftOf="@id/call"/>
+        android:layout_toRightOf="@id/editcall"
+        />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Emergency Call"
-        android:textSize="24sp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/emgCt"
         android:layout_alignBaseline="@id/call"
         android:layout_alignBottom="@id/call"
@@ -96,7 +99,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sound"
-        android:textSize="24sp"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/soundt"
         android:layout_above="@id/call"
         android:layout_centerHorizontal="true" />
