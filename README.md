@@ -1,8 +1,8 @@
-# PersonalAlarm
+, pu# PersonalAlarm
 EE3274 - Design Project
 
 Current State
 - Implemented the Bluetooth code, not yet tested
-- Call method implemented, simply use that to make phone call
-- Send Msg function not implemented
+- Call method implemented, public void call(String phoneNumber);
+- Send Msg function implemented, public void sendSMS(String phoneNumber, String msg);
 - Location function not tested
