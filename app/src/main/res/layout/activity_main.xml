@@ -17,6 +17,7 @@
             android:id="@+id/icon"
             android:layout_centerHorizontal="true"
             android:background="@color/colorPrimaryDark"/>
+
     </RelativeLayout>
     <Switch
         android:layout_width="wrap_content"
@@ -121,5 +122,56 @@
         android:layout_below="@id/editcall"
         android:layout_alignStart="@id/call"/>
 
+    <EditText
+        android:layout_marginTop="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/msgno"
+        android:text="Emergency No.:"
+        android:layout_below="@+id/smst"
+        android:layout_toLeftOf="@id/editcall"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:inputType="phone"/>
+
+    <EditText
+        android:layout_marginTop="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editsms"
+        android:text="992"
+        android:layout_below="@+id/smst"
+        android:layout_centerHorizontal="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:inputType="phone"
+        android:maxLength="14"/>
+
+    <Button
+        android:layout_width="60dp"
+        android:layout_height="35dp"
+        android:id="@+id/buttonsms"
+        android:text="Edit"
+        android:textSize="10sp"
+        android:layout_below="@id/sms"
+        android:layout_toStartOf="@id/call"
+        />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/errorinfo"
+        android:layout_toLeftOf="@id/msgno"
+        android:layout_below="@id/msgno"
+        android:id="@+id/info"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_toRightOf="@id/info"
+        android:layout_alignBottom="@id/info"
+        android:text="Error Info Text"
+        android:layout_marginLeft="10dp"
+        android:background="#e53935"
+        android:textColor="#ffffff"/>
 
 </RelativeLayout>

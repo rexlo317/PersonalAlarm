@@ -43,8 +43,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     protected LocationListener locationListener;
     private BluetoothAdapter bluetoothAdapter;
     private Set<BluetoothDevice> pairedDevices;
-    ImageView icon;
-    EditText editCall,tel;
+    ImageView icon,info;
+    EditText editCall,tel,msgno,editsms;
     Button buttonCall;
     Switch led,sound,emgencyCall,msg;
     @Override
@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         }
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         getLocation();
+        info = (ImageView) findViewById(R.id.info);
+
         msg = (Switch) findViewById(R.id.sms);
         msg.setChecked(true);
         led = (Switch) findViewById(R.id.led);
@@ -85,9 +87,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         emgencyCall = (Switch) findViewById(R.id.call);
         tel = (EditText) findViewById(R.id.tel);
         tel.setEnabled(false);
+        msgno = (EditText) findViewById(R.id.msgno);
+        msgno.setEnabled(false);
         icon = (ImageView) findViewById(R.id.icon);
-        icon.setImageResource(R.drawable.connected);
+        icon.setImageResource(R.drawable.disconnected);
         emgencyCall.setChecked(true);
+        editsms = (EditText) findViewById(R.id.editsms);
+        editsms.setEnabled(false);
         editCall = (EditText) findViewById(R.id.editcall);
         editCall.setEnabled(false);
         emgencyCall.setOnClickListener(new View.OnClickListener(){
