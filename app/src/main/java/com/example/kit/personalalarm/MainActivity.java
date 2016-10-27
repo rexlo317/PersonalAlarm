@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private Set<BluetoothDevice> pairedDevices;
     ImageView icon,info;
     EditText editCall,tel,msgno,editsms;
-    Button buttonCall;
+    Button buttonCall, buttonsms;
     Switch led,sound,emgencyCall,msg;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +81,23 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         info = (ImageView) findViewById(R.id.info);
 
         msg = (Switch) findViewById(R.id.sms);
+        msg.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                if(!msg.isChecked())
+                {
+                    editsms.setVisibility(View.INVISIBLE);
+                    msgno.setVisibility(View.INVISIBLE);
+                    buttonsms.setVisibility(View.INVISIBLE);
+                }else
+                {
+                    editsms.setVisibility(View.VISIBLE);
+                    msgno.setVisibility(View.VISIBLE);
+                    buttonsms.setVisibility(View.VISIBLE);
+                }
+            }
+        });
         msg.setChecked(true);
         led = (Switch) findViewById(R.id.led);
         sound = (Switch) findViewById(R.id.sound);
@@ -139,7 +156,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         fOut.write(editCall.getText().toString().getBytes());
                         fOut.close();
                         Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
-                        sendSMS(editCall.getText().toString(),"test");
                     }
                     catch (IOException e) {
                         Log.e("Exception", "File write failed: " + e.toString());
@@ -147,7 +163,39 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 }
             }
         });
+        buttonsms = (Button) findViewById(R.id.buttonsms);
+        buttonsms.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                if(!editsms.isEnabled())
+                {
+                    buttonsms.setText("DONE");
+                    editsms.setEnabled(true);
+                    editsms.requestFocus();
+                    editsms.selectAll();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(editsms, InputMethodManager.SHOW_IMPLICIT);
 
+                }else
+                {
+                    editsms.setSelectAllOnFocus(false);
+                    buttonsms.setText("EDIT");
+                    editsms.setEnabled(false);
+                    if(editsms.getText().toString().isEmpty())
+                        editsms.setText("992");
+                    try {
+                        FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+                        fOut.write(editsms.getText().toString().getBytes());
+                        fOut.close();
+                        Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
+                    }
+                    catch (IOException e) {
+                        Log.e("Exception", "File write failed: " + e.toString());
+                    }
+                }
+            }
+        });
         try{
             FileInputStream fin = openFileInput("config");
             int c;
