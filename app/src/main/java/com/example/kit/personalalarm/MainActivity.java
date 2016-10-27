@@ -96,11 +96,106 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     msgno.setVisibility(View.VISIBLE);
                     buttonsms.setVisibility(View.VISIBLE);
                 }
+                try {
+                    FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+                    if(led.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(sound.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(emgencyCall.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(msg.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    fOut.write(editCall.getText().toString().getBytes());
+                    fOut.write("C".getBytes());
+                    fOut.write(editsms.getText().toString().getBytes());
+                    fOut.write("M".getBytes());
+                    fOut.close();
+                }
+                catch (IOException e) {
+                    Log.e("Exception", "File write failed: " + e.toString());
+                }
             }
         });
         msg.setChecked(true);
         led = (Switch) findViewById(R.id.led);
+        led.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                try {
+                    FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+                    if(led.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(sound.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(emgencyCall.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(msg.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    fOut.write(editCall.getText().toString().getBytes());
+                    fOut.write("C".getBytes());
+                    fOut.write(editsms.getText().toString().getBytes());
+                    fOut.write("M".getBytes());
+                    fOut.close();
+                }
+                catch (IOException e) {
+                    Log.e("Exception", "File write failed: " + e.toString());
+                }
+            }
+        });
         sound = (Switch) findViewById(R.id.sound);
+        sound.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                try {
+                    FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+                    if(led.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(sound.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(emgencyCall.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(msg.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    fOut.write(editCall.getText().toString().getBytes());
+                    fOut.write("C".getBytes());
+                    fOut.write(editsms.getText().toString().getBytes());
+                    fOut.write("M".getBytes());
+                    fOut.close();
+                }
+                catch (IOException e) {
+                    Log.e("Exception", "File write failed: " + e.toString());
+                }
+            }
+        });
         emgencyCall = (Switch) findViewById(R.id.call);
         tel = (EditText) findViewById(R.id.tel);
         tel.setEnabled(false);
@@ -128,6 +223,33 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     tel.setVisibility(View.VISIBLE);
                     buttonCall.setVisibility(View.VISIBLE);
                 }
+                try {
+                    FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+                    if(led.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(sound.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(emgencyCall.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    if(msg.isChecked())
+                        fOut.write("T".getBytes());
+                    else
+                        fOut.write("F".getBytes());
+                    fOut.write(editCall.getText().toString().getBytes());
+                    fOut.write("C".getBytes());
+                    fOut.write(editsms.getText().toString().getBytes());
+                    fOut.write("M".getBytes());
+                    fOut.close();
+                }
+                catch (IOException e) {
+                    Log.e("Exception", "File write failed: " + e.toString());
+                }
             }
         });
         buttonCall = (Button) findViewById(R.id.buttoncall);
@@ -153,7 +275,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         editCall.setText("999");
                     try {
                         FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+                        if(led.isChecked())
+                            fOut.write("T".getBytes());
+                        else
+                            fOut.write("F".getBytes());
+                        if(sound.isChecked())
+                            fOut.write("T".getBytes());
+                        else
+                            fOut.write("F".getBytes());
+                        if(emgencyCall.isChecked())
+                            fOut.write("T".getBytes());
+                        else
+                            fOut.write("F".getBytes());
+                        if(msg.isChecked())
+                            fOut.write("T".getBytes());
+                        else
+                            fOut.write("F".getBytes());
                         fOut.write(editCall.getText().toString().getBytes());
+                        fOut.write("C".getBytes());
+                        fOut.write(editsms.getText().toString().getBytes());
+                        fOut.write("M".getBytes());
                         fOut.close();
                         Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
                     }
@@ -186,7 +327,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         editsms.setText("992");
                     try {
                         FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+                        if(led.isChecked())
+                            fOut.write("T".getBytes());
+                        else
+                            fOut.write("F".getBytes());
+                        if(sound.isChecked())
+                            fOut.write("T".getBytes());
+                        else
+                            fOut.write("F".getBytes());
+                        if(emgencyCall.isChecked())
+                            fOut.write("T".getBytes());
+                        else
+                            fOut.write("F".getBytes());
+                        if(msg.isChecked())
+                            fOut.write("T".getBytes());
+                        else
+                            fOut.write("F".getBytes());
+                        fOut.write(editCall.getText().toString().getBytes());
+                        fOut.write("C".getBytes());
                         fOut.write(editsms.getText().toString().getBytes());
+                        fOut.write("M".getBytes());
                         fOut.close();
                         Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
                     }
@@ -198,13 +358,67 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         });
         try{
             FileInputStream fin = openFileInput("config");
-            int c;
+            int c, inputcount = 0;
             String temp="";
 
-            while( (c = fin.read()) != -1){
-                temp = temp + Character.toString((char)c);
+            while( (c = fin.read()) != -1) {
+                if (inputcount < 4)
+                {
+                    switch (inputcount)
+                    {
+                        case 0:
+                            if ((char) c == 'T')
+                                led.setChecked(true);
+                            else
+                                led.setChecked(false);
+                            break;
+                        case 1:
+                            if ((char) c == 'T')
+                                sound.setChecked(true);
+                            else
+                                sound.setChecked(false);
+                            break;
+                        case 2:
+                            if ((char) c == 'T')
+                                emgencyCall.setChecked(true);
+                            else
+                            {
+                                emgencyCall.setChecked(false);
+                                editCall.setVisibility(View.INVISIBLE);
+                                tel.setVisibility(View.INVISIBLE);
+                                buttonCall.setVisibility(View.INVISIBLE);
+                            }
+                            break;
+                        case 3:
+                            if ((char) c == 'T')
+                                msg.setChecked(true);
+                            else
+                            {
+                                msg.setChecked(false);
+                                editsms.setVisibility(View.INVISIBLE);
+                                msgno.setVisibility(View.INVISIBLE);
+                                buttonsms.setVisibility(View.INVISIBLE);
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    if((char)c == 'C')
+                    {
+                        editCall.setText(temp);
+                        temp = "";
+                    }else if((char)c == 'M')
+                    {
+                        editsms.setText(temp);
+                        temp = "";
+                    }
+                    else
+                        temp = temp + Character.toString((char)c);
+                }
+
+                inputcount++;
             }
-            editCall.setText(temp);
         }
         catch(Exception e){
             Log.e("Exception", "File write failed: " + e.toString());
