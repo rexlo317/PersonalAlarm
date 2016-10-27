@@ -296,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         fOut.write(editsms.getText().toString().getBytes());
                         fOut.write("M".getBytes());
                         fOut.close();
-                        Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getBaseContext(),"Emergency Phone Number Edited.",Toast.LENGTH_SHORT).show();
                     }
                     catch (IOException e) {
                         Log.e("Exception", "File write failed: " + e.toString());
@@ -348,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         fOut.write(editsms.getText().toString().getBytes());
                         fOut.write("M".getBytes());
                         fOut.close();
-                        Toast.makeText(getBaseContext(),"Emergency Number Edited.",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getBaseContext(),"Emergency SMS Number Edited.",Toast.LENGTH_SHORT).show();
                     }
                     catch (IOException e) {
                         Log.e("Exception", "File write failed: " + e.toString());
@@ -506,7 +506,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     public void onLocationChanged(Location location) {
         try {
             System.out.print(location.getLatitude() + "   " + location.getLongitude());
-        }catch(Exception e){e.printStackTrace();};
+        }catch(Exception e)
+        {
+            //e.printStackTrace();
+        };
     }
 
     @Override
