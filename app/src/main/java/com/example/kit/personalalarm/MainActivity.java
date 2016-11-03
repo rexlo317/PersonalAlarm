@@ -1,6 +1,7 @@
 package com.example.kit.personalalarm;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,6 +21,7 @@ import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -36,6 +38,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -47,7 +50,9 @@ import static java.sql.Types.NULL;
 public class MainActivity extends AppCompatActivity implements LocationListener{
     protected LocationManager locationManager;
     protected LocationListener locationListener;
-    private BluetoothAdapter bluetoothAdapter;
+    private BluetoothAdapter bluetoothAdapter = null;
+    private BluetoothDevice bluetoothDevice = null;
+    private BluetoothSocket bluetoothSocket = null;
     private Set<BluetoothDevice> pairedDevices;
     private Handler bluetoothIn;
     final int handlerState = 0;
@@ -67,10 +72,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     public static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
 
-
-    // String for MAC address
-
-    private static String address;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -228,6 +229,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         });
 
         readSetting();
+        led_switch.setEnabled(false);
+        sound_switch.setEnabled(false);
+        call_switch.setEnabled(false);
+        sms_switch.setEnabled(false);
+        call_button.setEnabled(false);
+        sms_button.setEnabled(false);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter == null)
@@ -243,47 +250,97 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
         }
-        else
-        {
+        else {
             if (!bluetoothAdapter.isEnabled()) {
                 Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(turnOn, 0);
                 Toast.makeText(getApplicationContext(), "Turned on", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(getApplicationContext(), "Already on", Toast.LENGTH_LONG).show();
             }
-            if(bluetoothAdapter.isEnabled())
-                icon_imageview.setImageResource(R.drawable.connected);
             pairedDevices = bluetoothAdapter.getBondedDevices();
-            ArrayList list = new ArrayList();
+            final ArrayList addressList = new ArrayList();
 
-            for (BluetoothDevice bt : pairedDevices)
-            {
-                list.add(bt.getName());
-                if(bt.getName() == "HC-06")
-                {
-//                    Intent intent = new Intent(this);
-                    icon_imageview.setImageResource(R.drawable.connected);
-                }
+
+            AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
+
+            builderSingle.setTitle("Select the device");
+
+            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1);
+            for (BluetoothDevice bt : pairedDevices) {
+                arrayAdapter.add(bt.getName());
+                addressList.add(bt.getAddress());
             }
-            Toast.makeText(getApplicationContext(), "Showing Paired Devices", Toast.LENGTH_SHORT).show();
-        }
 
-        // Example of a call_switch to a native method
+            if (bluetoothSocket == null || !bluetoothSocket.isConnected()) {
+                builderSingle.setAdapter(
+                        arrayAdapter,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String deviceAddress = addressList.get(which).toString();
+
+                                bluetoothDevice = bluetoothAdapter.getRemoteDevice(deviceAddress);
+                                try {
+
+                                    bluetoothSocket = createBluetoothSocket(bluetoothDevice);
+
+                                } catch (IOException e) {
+
+                                    Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_LONG).show();
+
+                                }
+
+                                try {
+                                    bluetoothSocket.connect();
+                                } catch (IOException connectException) {
+                                    try {
+                                        bluetoothSocket.close();
+                                    } catch (IOException closeException) {
+                                    }
+                                }
+
+                                mConnectedThread = new ConnectedThread(bluetoothSocket);
+                                mConnectedThread.start();
+
+                                mConnectedThread.write("x"); //test if connected
+                            }
+                        });
+                builderSingle.show();
+            }
+
+        }
 
     }
 
-    private void writeSetting() {
+    private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+        return  device.createRfcommSocketToServiceRecord(BTMODULEUUID);
+        //creates secure outgoing connection with BT device using UUID
+    }
+
+    private void writeSetting()
+    {
         try {
             FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+            String hardwareSetting = "";
             if(led_switch.isChecked())
+            {
                 fOut.write("T".getBytes());
+                hardwareSetting += "T";
+            }
             else
+            {
                 fOut.write("F".getBytes());
+                hardwareSetting += "F";
+            }
             if(sound_switch.isChecked())
+            {
                 fOut.write("T".getBytes());
+                hardwareSetting += "T";
+            }
             else
+            {
                 fOut.write("F".getBytes());
+                hardwareSetting += "F";
+            }
             if(call_switch.isChecked())
                 fOut.write("T".getBytes());
             else
@@ -297,13 +354,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             fOut.write(sms_edittext.getText().toString().getBytes());
             fOut.write("M".getBytes());
             fOut.close();
+            mConnectedThread.write(hardwareSetting);
         }
         catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
         }
     }
 
-    private void readSetting() {
+    private void readSetting()
+    {
         try{
             FileInputStream fin = openFileInput("config");
             int c, inputcount = 0;
@@ -373,7 +432,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         }
     }
 
-    private void call(String phoneNumber) {
+    private void call(String phoneNumber)
+    {
         {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
             callIntent.setData(Uri.parse("callno_edittext:"+phoneNumber));
@@ -409,7 +469,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private class ConnectedThread extends Thread {
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
-
+        private boolean firstTime = true;
         public ConnectedThread(BluetoothSocket socket)
         {
             InputStream tempIn = null;
@@ -436,8 +496,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 try
                 {
                     bytes = mmInStream.read(buffer);
-                    String helpmessage = new String(buffer, 0, bytes);
-                    bluetoothIn.obtainMessage(handlerState, bytes, -1, helpmessage).sendToTarget();
+                    String helpMessage = new String(buffer, 0, bytes);
+                    bluetoothIn.obtainMessage(handlerState, bytes, -1, helpMessage).sendToTarget();
                 }catch(IOException e){
                     break;
                 }
@@ -450,6 +510,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             try
             {
                 mmOutStream.write(buffer);
+                if(firstTime)
+                {
+                    Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_LONG).show();
+                    firstTime = !firstTime;
+                    icon_imageview.setImageResource(R.drawable.connected);
+                    led_switch.setEnabled(false);
+                    sound_switch.setEnabled(false);
+                    call_switch.setEnabled(false);
+                    sms_switch.setEnabled(false);
+                    call_button.setEnabled(false);
+                    sms_button.setEnabled(false);
+                }
             }catch (IOException e)
             {
                 Toast.makeText(getBaseContext(), "Connection Failure", Toast.LENGTH_LONG).show();
