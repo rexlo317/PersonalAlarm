@@ -47,7 +47,7 @@ import static android.R.attr.data;
 import static android.R.attr.inputType;
 import static java.sql.Types.NULL;
 
-public class MainActivity extends AppCompatActivity implements LocationListener{
+public class MainActivity extends AppCompatActivity implements LocationListener{ //Author: YAN Tsz Kit (Student ID:54106008)
     protected LocationManager locationManager;
     protected LocationListener locationListener;
     private BluetoothAdapter bluetoothAdapter = null;
@@ -314,10 +314,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         return  device.createRfcommSocketToServiceRecord(BTMODULEUUID);
         //creates secure outgoing connection with BT device using UUID
+        //Author: YAN Tsz Kit (Student ID:54106008)
     }
 
     private void writeSetting()
-    {
+    {//Author: YAN Tsz Kit (Student ID:54106008)
         try {
             FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
             String hardwareSetting = "";
@@ -362,7 +363,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     }
 
     private void readSetting()
-    {
+    {//Author: YAN Tsz Kit (Student ID:54106008)
         try{
             FileInputStream fin = openFileInput("config");
             int c, inputcount = 0;
@@ -433,7 +434,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     }
 
     private void call(String phoneNumber)
-    {
+    {//Author: YAN Tsz Kit (Student ID:54106008)
         {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
             callIntent.setData(Uri.parse("callno_edittext:"+phoneNumber));
@@ -454,7 +455,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     }
 
     public void sendSMS(String phoneNumber, String msg)
-    {// The number on which you want to send SMS
+    {
+        //Author: YAN Tsz Kit (Student ID:54106008)
+        //The number on which you want to send SMS
         try {
             SmsManager sms = SmsManager.getDefault();
             sms.sendTextMessage(phoneNumber, null, msg, null, null);
@@ -467,6 +470,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
 
     private class ConnectedThread extends Thread {
+        //Author: YAN Tsz Kit (Student ID:54106008)
         private final InputStream mmInStream;
         private final OutputStream mmOutStream;
         private boolean firstTime = true;
