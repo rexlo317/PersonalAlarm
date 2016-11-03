@@ -1,6 +1,7 @@
 package com.example.kit.personalalarm;
 
 import android.Manifest;
+import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -30,12 +32,16 @@ import android.widget.Toast;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.UUID;
 
 import static android.R.attr.button;
 import static android.R.attr.data;
+import static android.R.attr.inputType;
 import static java.sql.Types.NULL;
 
 public class MainActivity extends AppCompatActivity implements LocationListener{
@@ -43,319 +49,261 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     protected LocationListener locationListener;
     private BluetoothAdapter bluetoothAdapter;
     private Set<BluetoothDevice> pairedDevices;
-    ImageView icon,info;
-    EditText editCall,tel,msgno,editsms;
-    Button buttonCall, buttonsms;
-    Switch led,sound,emgencyCall,msg;
+    private Handler bluetoothIn;
+    final int handlerState = 0;
+    private StringBuilder recDataString = new StringBuilder();
+
+    ImageView icon_imageview,info_imageview;
+    EditText call_edittext,callno_edittext,smsno_textview,sms_edittext;
+    Button call_button, sms_button;
+    Switch led_switch,sound_switch,call_switch,sms_switch;
+
+    private ConnectedThread mConnectedThread;
+
+
+
+    // SPP UUID service - this should work for most devices
+
+    public static final UUID BTMODULEUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
+
+
+    // String for MAC address
+
+    private static String address;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 1);
-        }
-        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
-        }
-        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 3);
-        }
-        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
-        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 4);
-        }
-        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS);
-        if(permissionCheck != PackageManager.PERMISSION_GRANTED)
-        {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS} , 5);
-        }
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        getLocation();
-        info = (ImageView) findViewById(R.id.info);
 
-        msg = (Switch) findViewById(R.id.sms);
-        msg.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v)
-            {
-                if(!msg.isChecked())
-                {
-                    editsms.setVisibility(View.INVISIBLE);
-                    msgno.setVisibility(View.INVISIBLE);
-                    buttonsms.setVisibility(View.INVISIBLE);
-                }else
-                {
-                    editsms.setVisibility(View.VISIBLE);
-                    msgno.setVisibility(View.VISIBLE);
-                    buttonsms.setVisibility(View.VISIBLE);
-                }
-                try {
-                    FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
-                    if(led.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(sound.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(emgencyCall.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(msg.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    fOut.write(editCall.getText().toString().getBytes());
-                    fOut.write("C".getBytes());
-                    fOut.write(editsms.getText().toString().getBytes());
-                    fOut.write("M".getBytes());
-                    fOut.close();
-                }
-                catch (IOException e) {
-                    Log.e("Exception", "File write failed: " + e.toString());
-                }
-            }
-        });
-        msg.setChecked(true);
-        led = (Switch) findViewById(R.id.led);
-        led.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                try {
-                    FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
-                    if(led.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(sound.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(emgencyCall.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(msg.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    fOut.write(editCall.getText().toString().getBytes());
-                    fOut.write("C".getBytes());
-                    fOut.write(editsms.getText().toString().getBytes());
-                    fOut.write("M".getBytes());
-                    fOut.close();
-                }
-                catch (IOException e) {
-                    Log.e("Exception", "File write failed: " + e.toString());
-                }
-            }
-        });
-        sound = (Switch) findViewById(R.id.sound);
-        sound.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                try {
-                    FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
-                    if(led.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(sound.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(emgencyCall.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(msg.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    fOut.write(editCall.getText().toString().getBytes());
-                    fOut.write("C".getBytes());
-                    fOut.write(editsms.getText().toString().getBytes());
-                    fOut.write("M".getBytes());
-                    fOut.close();
-                }
-                catch (IOException e) {
-                    Log.e("Exception", "File write failed: " + e.toString());
-                }
-            }
-        });
-        emgencyCall = (Switch) findViewById(R.id.call);
-        tel = (EditText) findViewById(R.id.tel);
-        tel.setEnabled(false);
-        msgno = (EditText) findViewById(R.id.msgno);
-        msgno.setEnabled(false);
-        icon = (ImageView) findViewById(R.id.icon);
-        icon.setImageResource(R.drawable.disconnected);
-        emgencyCall.setChecked(true);
-        editsms = (EditText) findViewById(R.id.editsms);
-        editsms.setEnabled(false);
-        editCall = (EditText) findViewById(R.id.editcall);
-        editCall.setEnabled(false);
-        emgencyCall.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v)
-            {
-                if(!emgencyCall.isChecked())
-                {
-                    editCall.setVisibility(View.INVISIBLE);
-                    tel.setVisibility(View.INVISIBLE);
-                    buttonCall.setVisibility(View.INVISIBLE);
-                }else
-                {
-                    editCall.setVisibility(View.VISIBLE);
-                    tel.setVisibility(View.VISIBLE);
-                    buttonCall.setVisibility(View.VISIBLE);
-                }
-                try {
-                    FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
-                    if(led.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(sound.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(emgencyCall.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    if(msg.isChecked())
-                        fOut.write("T".getBytes());
-                    else
-                        fOut.write("F".getBytes());
-                    fOut.write(editCall.getText().toString().getBytes());
-                    fOut.write("C".getBytes());
-                    fOut.write(editsms.getText().toString().getBytes());
-                    fOut.write("M".getBytes());
-                    fOut.close();
-                }
-                catch (IOException e) {
-                    Log.e("Exception", "File write failed: " + e.toString());
-                }
-            }
-        });
-        buttonCall = (Button) findViewById(R.id.buttoncall);
-        buttonCall.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v)
-            {
-                if(!editCall.isEnabled())
-                {
-                    buttonCall.setText("DONE");
-                    editCall.setEnabled(true);
-                    editCall.requestFocus();
-                    editCall.selectAll();
-                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(editCall, InputMethodManager.SHOW_IMPLICIT);
+        permissionCheck();
 
-                }else
+        bluetoothIn = new Handler(){
+            public void handleMessage(android.os.Message msg)
+            {
+                if(msg.what == handlerState)
                 {
-                    editCall.setSelectAllOnFocus(false);
-                    buttonCall.setText("EDIT");
-                    editCall.setEnabled(false);
-                    if(editCall.getText().toString().isEmpty())
-                        editCall.setText("999");
-                    try {
-                        FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
-                        if(led.isChecked())
-                            fOut.write("T".getBytes());
-                        else
-                            fOut.write("F".getBytes());
-                        if(sound.isChecked())
-                            fOut.write("T".getBytes());
-                        else
-                            fOut.write("F".getBytes());
-                        if(emgencyCall.isChecked())
-                            fOut.write("T".getBytes());
-                        else
-                            fOut.write("F".getBytes());
-                        if(msg.isChecked())
-                            fOut.write("T".getBytes());
-                        else
-                            fOut.write("F".getBytes());
-                        fOut.write(editCall.getText().toString().getBytes());
-                        fOut.write("C".getBytes());
-                        fOut.write(editsms.getText().toString().getBytes());
-                        fOut.write("M".getBytes());
-                        fOut.close();
-                        Toast.makeText(getBaseContext(),"Emergency Phone Number Edited.",Toast.LENGTH_SHORT).show();
+                    String helpmessage = (String) msg.obj;
+                    recDataString.append(helpmessage);
+                    if(recDataString.equals("HELP"))
+                    {
+                        if(call_switch.isChecked())
+                            call(call_edittext.toString());
+                        if(sms_switch.isChecked())
+                            sendSMS(sms_edittext.toString(),"HELP!");
                     }
-                    catch (IOException e) {
-                        Log.e("Exception", "File write failed: " + e.toString());
-                    }
+
+                    recDataString.delete(0, recDataString.length());
                 }
+
             }
-        });
-        buttonsms = (Button) findViewById(R.id.buttonsms);
-        buttonsms.setOnClickListener(new View.OnClickListener(){
+        };
+
+        info_imageview = (ImageView) findViewById(R.id.info_imageview);
+        sms_switch = (Switch) findViewById(R.id.sms_switch);
+        sms_switch.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v)
             {
-                if(!editsms.isEnabled())
+                if(!sms_switch.isChecked())
                 {
-                    buttonsms.setText("DONE");
-                    editsms.setEnabled(true);
-                    editsms.requestFocus();
-                    editsms.selectAll();
+                    sms_edittext.setVisibility(View.INVISIBLE);
+                    smsno_textview.setVisibility(View.INVISIBLE);
+                    sms_button.setVisibility(View.INVISIBLE);
+                }else
+                {
+                    sms_edittext.setVisibility(View.VISIBLE);
+                    smsno_textview.setVisibility(View.VISIBLE);
+                    sms_button.setVisibility(View.VISIBLE);
+                }
+                writeSetting();
+            }
+        });
+        sms_switch.setChecked(true);
+        led_switch = (Switch) findViewById(R.id.led_switch);
+        led_switch.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                writeSetting();
+            }
+        });
+        sound_switch = (Switch) findViewById(R.id.sound_switch);
+        sound_switch.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                writeSetting();
+            }
+        });
+        call_switch = (Switch) findViewById(R.id.call_switch);
+        callno_edittext = (EditText) findViewById(R.id.callno_edittext);
+        callno_edittext.setEnabled(false);
+        smsno_textview = (EditText) findViewById(R.id.smsno_textview);
+        smsno_textview.setEnabled(false);
+        icon_imageview = (ImageView) findViewById(R.id.icon_imageview);
+        icon_imageview.setImageResource(R.drawable.disconnected);
+        call_switch.setChecked(true);
+        sms_edittext = (EditText) findViewById(R.id.sms_edittext);
+        sms_edittext.setEnabled(false);
+        call_edittext = (EditText) findViewById(R.id.call_edittext);
+        call_edittext.setEnabled(false);
+        call_switch.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                if(!call_switch.isChecked())
+                {
+                    call_edittext.setVisibility(View.INVISIBLE);
+                    callno_edittext.setVisibility(View.INVISIBLE);
+                    call_button.setVisibility(View.INVISIBLE);
+                }else
+                {
+                    call_edittext.setVisibility(View.VISIBLE);
+                    callno_edittext.setVisibility(View.VISIBLE);
+                    call_button.setVisibility(View.VISIBLE);
+                }
+                writeSetting();
+            }
+        });
+        call_button = (Button) findViewById(R.id.call_button);
+        call_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                if(!call_edittext.isEnabled())
+                {
+                    call_button.setText("DONE");
+                    call_edittext.setEnabled(true);
+                    call_edittext.requestFocus();
+                    call_edittext.selectAll();
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(editsms, InputMethodManager.SHOW_IMPLICIT);
+                    imm.showSoftInput(call_edittext, InputMethodManager.SHOW_IMPLICIT);
 
                 }else
                 {
-                    editsms.setSelectAllOnFocus(false);
-                    buttonsms.setText("EDIT");
-                    editsms.setEnabled(false);
-                    if(editsms.getText().toString().isEmpty())
-                        editsms.setText("992");
+                    call_edittext.setSelectAllOnFocus(false);
+                    call_button.setText("EDIT");
+                    call_edittext.setEnabled(false);
+                    if(call_edittext.getText().toString().isEmpty())
+                        call_edittext.setText("999");
                     try {
-                        FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
-                        if(led.isChecked())
-                            fOut.write("T".getBytes());
-                        else
-                            fOut.write("F".getBytes());
-                        if(sound.isChecked())
-                            fOut.write("T".getBytes());
-                        else
-                            fOut.write("F".getBytes());
-                        if(emgencyCall.isChecked())
-                            fOut.write("T".getBytes());
-                        else
-                            fOut.write("F".getBytes());
-                        if(msg.isChecked())
-                            fOut.write("T".getBytes());
-                        else
-                            fOut.write("F".getBytes());
-                        fOut.write(editCall.getText().toString().getBytes());
-                        fOut.write("C".getBytes());
-                        fOut.write(editsms.getText().toString().getBytes());
-                        fOut.write("M".getBytes());
-                        fOut.close();
+                        writeSetting();
+                        Toast.makeText(getBaseContext(),"Emergency Call Number Edited.",Toast.LENGTH_SHORT).show();
+                    }catch(Exception e){};
+
+                }
+            }
+        });
+        sms_button = (Button) findViewById(R.id.sms_button);
+        sms_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                if(!sms_edittext.isEnabled())
+                {
+                    sms_button.setText("DONE");
+                    sms_edittext.setEnabled(true);
+                    sms_edittext.requestFocus();
+                    sms_edittext.selectAll();
+                    InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.showSoftInput(sms_edittext, InputMethodManager.SHOW_IMPLICIT);
+
+                }else
+                {
+                    sms_edittext.setSelectAllOnFocus(false);
+                    sms_button.setText("EDIT");
+                    sms_edittext.setEnabled(false);
+                    if(sms_edittext.getText().toString().isEmpty())
+                        sms_edittext.setText("992");
+                    try {
+                        writeSetting();
                         Toast.makeText(getBaseContext(),"Emergency SMS Number Edited.",Toast.LENGTH_SHORT).show();
-                    }
-                    catch (IOException e) {
-                        Log.e("Exception", "File write failed: " + e.toString());
-                    }
+                    }catch(Exception e){};
                 }
             }
         });
+
+        readSetting();
+
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if(bluetoothAdapter == null)
+        {
+            new AlertDialog.Builder(this)
+                    .setTitle("Not compatible")
+                    .setMessage("Your phone does not support Bluetooth")
+                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            //System.exit(0);
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        }
+        else
+        {
+            if (!bluetoothAdapter.isEnabled()) {
+                Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(turnOn, 0);
+                Toast.makeText(getApplicationContext(), "Turned on", Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Already on", Toast.LENGTH_LONG).show();
+            }
+            if(bluetoothAdapter.isEnabled())
+                icon_imageview.setImageResource(R.drawable.connected);
+            pairedDevices = bluetoothAdapter.getBondedDevices();
+            ArrayList list = new ArrayList();
+
+            for (BluetoothDevice bt : pairedDevices)
+            {
+                list.add(bt.getName());
+                if(bt.getName() == "HC-06")
+                {
+//                    Intent intent = new Intent(this);
+                    icon_imageview.setImageResource(R.drawable.connected);
+                }
+            }
+            Toast.makeText(getApplicationContext(), "Showing Paired Devices", Toast.LENGTH_SHORT).show();
+        }
+
+        // Example of a call_switch to a native method
+
+    }
+
+    private void writeSetting() {
+        try {
+            FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
+            if(led_switch.isChecked())
+                fOut.write("T".getBytes());
+            else
+                fOut.write("F".getBytes());
+            if(sound_switch.isChecked())
+                fOut.write("T".getBytes());
+            else
+                fOut.write("F".getBytes());
+            if(call_switch.isChecked())
+                fOut.write("T".getBytes());
+            else
+                fOut.write("F".getBytes());
+            if(sms_switch.isChecked())
+                fOut.write("T".getBytes());
+            else
+                fOut.write("F".getBytes());
+            fOut.write(call_edittext.getText().toString().getBytes());
+            fOut.write("C".getBytes());
+            fOut.write(sms_edittext.getText().toString().getBytes());
+            fOut.write("M".getBytes());
+            fOut.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+
+    private void readSetting() {
         try{
             FileInputStream fin = openFileInput("config");
             int c, inputcount = 0;
@@ -368,36 +316,36 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     {
                         case 0:
                             if ((char) c == 'T')
-                                led.setChecked(true);
+                                led_switch.setChecked(true);
                             else
-                                led.setChecked(false);
+                                led_switch.setChecked(false);
                             break;
                         case 1:
                             if ((char) c == 'T')
-                                sound.setChecked(true);
+                                sound_switch.setChecked(true);
                             else
-                                sound.setChecked(false);
+                                sound_switch.setChecked(false);
                             break;
                         case 2:
                             if ((char) c == 'T')
-                                emgencyCall.setChecked(true);
+                                call_switch.setChecked(true);
                             else
                             {
-                                emgencyCall.setChecked(false);
-                                editCall.setVisibility(View.INVISIBLE);
-                                tel.setVisibility(View.INVISIBLE);
-                                buttonCall.setVisibility(View.INVISIBLE);
+                                call_switch.setChecked(false);
+                                call_edittext.setVisibility(View.INVISIBLE);
+                                callno_edittext.setVisibility(View.INVISIBLE);
+                                call_button.setVisibility(View.INVISIBLE);
                             }
                             break;
                         case 3:
                             if ((char) c == 'T')
-                                msg.setChecked(true);
+                                sms_switch.setChecked(true);
                             else
                             {
-                                msg.setChecked(false);
-                                editsms.setVisibility(View.INVISIBLE);
-                                msgno.setVisibility(View.INVISIBLE);
-                                buttonsms.setVisibility(View.INVISIBLE);
+                                sms_switch.setChecked(false);
+                                sms_edittext.setVisibility(View.INVISIBLE);
+                                smsno_textview.setVisibility(View.INVISIBLE);
+                                sms_button.setVisibility(View.INVISIBLE);
                             }
                             break;
                     }
@@ -406,11 +354,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 {
                     if((char)c == 'C')
                     {
-                        editCall.setText(temp);
+                        call_edittext.setText(temp);
                         temp = "";
                     }else if((char)c == 'M')
                     {
-                        editsms.setText(temp);
+                        sms_edittext.setText(temp);
                         temp = "";
                     }
                     else
@@ -423,49 +371,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         catch(Exception e){
             Log.e("Exception", "File write failed: " + e.toString());
         }
-
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if(bluetoothAdapter == null)
-        {
-//            new AlertDialog.Builder(this)
-//                    .setTitle("Not compatible")
-//                    .setMessage("Your phone does not support Bluetooth")
-//                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
-//                        public void onClick(DialogInterface dialog, int which) {
-//                            System.exit(0);
-//                        }
-//                    })
-//                    .setIcon(android.R.drawable.ic_dialog_alert)
-//                    .show();
-
-        }
-        else
-        {
-            if (!bluetoothAdapter.isEnabled()) {
-                Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(turnOn, 0);
-                Toast.makeText(getApplicationContext(), "Turned on", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(getApplicationContext(), "Already on", Toast.LENGTH_LONG).show();
-            }
-            if(bluetoothAdapter.isEnabled())
-                icon.setImageResource(R.drawable.connected);
-            pairedDevices = bluetoothAdapter.getBondedDevices();
-            ArrayList list = new ArrayList();
-
-            for (BluetoothDevice bt : pairedDevices)
-                list.add(bt.getName());
-            Toast.makeText(getApplicationContext(), "Showing Paired Devices", Toast.LENGTH_SHORT).show();
-        }
-
-        // Example of a call to a native method
-
     }
 
     private void call(String phoneNumber) {
         {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
-            callIntent.setData(Uri.parse("tel:"+phoneNumber));
+            callIntent.setData(Uri.parse("callno_edittext:"+phoneNumber));
             callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if(ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED)
             {
@@ -493,6 +404,95 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             Toast.makeText(getApplicationContext(), "Message Cannot Send", Toast.LENGTH_SHORT).show();
         }
     }
+
+
+    private class ConnectedThread extends Thread {
+        private final InputStream mmInStream;
+        private final OutputStream mmOutStream;
+
+        public ConnectedThread(BluetoothSocket socket)
+        {
+            InputStream tempIn = null;
+            OutputStream tempOut = null;
+
+
+            try
+            {
+                tempIn = socket.getInputStream();
+                tempOut = socket.getOutputStream();
+            }catch(IOException e){};
+
+            mmInStream = tempIn;
+            mmOutStream = tempOut;
+        }
+
+        public void run()
+        {
+            byte[] buffer = new byte[256];
+            int bytes;
+
+            while(true)
+            {
+                try
+                {
+                    bytes = mmInStream.read(buffer);
+                    String helpmessage = new String(buffer, 0, bytes);
+                    bluetoothIn.obtainMessage(handlerState, bytes, -1, helpmessage).sendToTarget();
+                }catch(IOException e){
+                    break;
+                }
+            }
+        }
+
+        public void write(String setting)
+        {
+            byte[] buffer = setting.getBytes();
+            try
+            {
+                mmOutStream.write(buffer);
+            }catch (IOException e)
+            {
+                Toast.makeText(getBaseContext(), "Connection Failure", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private void permissionCheck()
+    {
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CALL_PHONE}, 1);
+        }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 2);
+        }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 3);
+        }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 4);
+        }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS);
+        if(permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS} , 5);
+        }
+        permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN);
+        if(permissionCheck != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_ADMIN} , 6);
+        }
+
+    }
+
+
 
     private void getLocation()
     {
@@ -526,4 +526,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     public void onProviderDisabled(String provider) {
 
     }
+
+
+
 }

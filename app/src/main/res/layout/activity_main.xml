@@ -9,12 +9,12 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/ledt">
+        android:layout_above="@+id/led_textview">
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/disconnected"
-            android:id="@+id/icon"
+            android:id="@+id/icon_imageview"
             android:layout_centerHorizontal="true"
             android:background="@color/colorPrimaryDark"/>
 
@@ -25,35 +25,35 @@
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="32dp"
-        android:id="@+id/led" />
+        android:id="@+id/led_switch" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@id/led"
-        android:layout_alignTop="@id/led"
+        android:layout_alignBottom="@id/led_switch"
+        android:layout_alignTop="@id/led_switch"
         android:text="LED"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/ledt"/>
+        android:id="@+id/led_textview"/>
 
 
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="29dp"
-        android:id="@+id/sound"
-        android:layout_below="@id/led"
-        android:layout_alignStart="@id/led" />
+        android:id="@+id/sound_switch"
+        android:layout_below="@id/led_switch"
+        android:layout_alignStart="@id/led_switch" />
 
     <EditText
         android:layout_marginTop="0dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/editcall"
+        android:id="@+id/call_edittext"
         android:text="999"
-        android:layout_below="@+id/emgCt"
+        android:layout_below="@+id/call_textview"
         android:layout_centerHorizontal="true"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:inputType="phone"
@@ -62,27 +62,27 @@
         android:layout_marginTop="0dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/tel"
+        android:id="@+id/callno_edittext"
         android:text="Emergency No.:"
-        android:layout_below="@+id/emgCt"
-        android:layout_toLeftOf="@id/editcall"
+        android:layout_below="@+id/call_textview"
+        android:layout_toLeftOf="@id/call_edittext"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:inputType="phone"/>
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
-        android:id="@+id/call"
-        android:layout_below="@id/sound"
-        android:layout_alignStart="@id/sound" />
+        android:id="@+id/call_switch"
+        android:layout_below="@id/sound_switch"
+        android:layout_alignStart="@id/sound_switch" />
     <Button
         android:layout_width="60dp"
         android:layout_height="35dp"
-        android:id="@+id/buttoncall"
+        android:id="@+id/call_button"
         android:text="Edit"
         android:textSize="10sp"
-        android:layout_below="@id/call"
-        android:layout_toStartOf="@id/call"
+        android:layout_below="@id/call_switch"
+        android:layout_toStartOf="@id/call_switch"
         />
 
     <TextView
@@ -90,9 +90,9 @@
         android:layout_height="wrap_content"
         android:text="Emergency Call"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/emgCt"
-        android:layout_alignBaseline="@id/call"
-        android:layout_alignBottom="@id/call"
+        android:id="@+id/call_textview"
+        android:layout_alignBaseline="@id/call_switch"
+        android:layout_alignBottom="@id/call_switch"
         android:layout_centerHorizontal="true" />
 
 
@@ -102,8 +102,8 @@
         android:layout_height="wrap_content"
         android:text="Sound"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/soundt"
-        android:layout_above="@id/call"
+        android:id="@+id/sound_textview"
+        android:layout_above="@id/call_switch"
         android:layout_centerHorizontal="true" />
 
     <TextView
@@ -111,25 +111,25 @@
         android:layout_height="wrap_content"
         android:text="Emergency SMS"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:id="@+id/smst"
-        android:layout_below="@id/editcall"
+        android:id="@+id/sms_textview"
+        android:layout_below="@id/call_edittext"
         android:layout_centerHorizontal="true"/>
 
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/sms"
-        android:layout_below="@id/editcall"
-        android:layout_alignStart="@id/call"/>
+        android:id="@+id/sms_switch"
+        android:layout_below="@id/call_edittext"
+        android:layout_alignStart="@id/call_switch"/>
 
     <EditText
         android:layout_marginTop="0dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/msgno"
+        android:id="@+id/smsno_textview"
         android:text="Emergency No.: "
-        android:layout_below="@+id/smst"
-        android:layout_toLeftOf="@id/editcall"
+        android:layout_below="@+id/sms_textview"
+        android:layout_toLeftOf="@id/call_edittext"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:inputType="phone"/>
 
@@ -137,9 +137,9 @@
         android:layout_marginTop="0dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/editsms"
+        android:id="@+id/sms_edittext"
         android:text="992"
-        android:layout_below="@+id/smst"
+        android:layout_below="@+id/sms_textview"
         android:layout_centerHorizontal="true"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:inputType="phone"
@@ -148,27 +148,27 @@
     <Button
         android:layout_width="60dp"
         android:layout_height="35dp"
-        android:id="@+id/buttonsms"
+        android:id="@+id/sms_button"
         android:text="Edit"
         android:textSize="10sp"
-        android:layout_below="@id/sms"
-        android:layout_toStartOf="@id/call"
+        android:layout_below="@id/sms_switch"
+        android:layout_toStartOf="@id/call_switch"
         />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/errorinfo"
-        android:layout_toLeftOf="@id/msgno"
-        android:layout_below="@id/msgno"
-        android:id="@+id/info"/>
+        android:layout_toLeftOf="@id/smsno_textview"
+        android:layout_below="@id/smsno_textview"
+        android:id="@+id/info_imageview"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:layout_toRightOf="@id/info"
-        android:layout_alignBottom="@id/info"
+        android:layout_toRightOf="@id/info_imageview"
+        android:layout_alignBottom="@id/info_imageview"
         android:text="Error Info Text"
         android:layout_marginLeft="10dp"
         android:background="#e53935"
