@@ -198,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         writeSetting();
                         Toast.makeText(getBaseContext(),"Emergency Call Number Edited.",Toast.LENGTH_SHORT).show();
                     }catch(Exception e){};
-
                 }
             }
         });
@@ -242,22 +241,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter == null)
         {
-            new AlertDialog.Builder(this)
-                    .setTitle("Not compatible")
-                    .setMessage("Your phone does not support Bluetooth")
-                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            System.exit(0);
-                        }
-                    })
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .show();
+//            new AlertDialog.Builder(this)
+//                    .setTitle("Not compatible")
+//                    .setMessage("Your phone does not support Bluetooth")
+//                    .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            System.exit(0);
+//                        }
+//                    })
+//                    .setIcon(android.R.drawable.ic_dialog_alert)
+//                    .show();
         }
         else {
             if (!bluetoothAdapter.isEnabled()) {
                 Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(turnOn, 0);
-                Toast.makeText(getApplicationContext(), "Turned on", Toast.LENGTH_LONG).show();
             }
             pairedDevices = bluetoothAdapter.getBondedDevices();
             final ArrayList addressList = new ArrayList();
@@ -455,7 +453,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     {//Author: YAN Tsz Kit (Student ID:54106008)
         {
             Intent callIntent = new Intent(Intent.ACTION_CALL);
-            callIntent.setData(Uri.parse("callno_edittext:"+phoneNumber));
+            callIntent.setData(Uri.parse("tel:"+phoneNumber));
             callIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if(ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED)
             {
