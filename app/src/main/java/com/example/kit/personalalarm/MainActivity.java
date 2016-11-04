@@ -44,6 +44,7 @@ import java.util.UUID;
 
 import static android.R.attr.button;
 import static android.R.attr.color;
+import static android.R.attr.configChanges;
 import static android.R.attr.data;
 import static android.R.attr.inputType;
 import static java.sql.Types.NULL;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     TextView info_textview;
 
     private ConnectedThread mConnectedThread;
-
+    private DataCommThread mDataCommThread;
 
 
     // SPP UUID service - this should work for most devices
@@ -314,10 +315,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                                     }
                                 }
 
-                                mConnectedThread = new ConnectedThread(bluetoothSocket);
+                                mConnectedThread = new ConnectedThread(bluetoothDevice);
                                 mConnectedThread.start();
 
-                                mConnectedThread.write("x"); //test if connected
+
                             }
                         });
                 builderSingle.show();
@@ -371,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             fOut.write(sms_edittext.getText().toString().getBytes());
             fOut.write("M".getBytes());
             fOut.close();
-            mConnectedThread.write(hardwareSetting);
+            mDataCommThread.write(hardwareSetting);
         }
         catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
@@ -484,57 +485,51 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         }
     }
 
+    private void startDataCommThread(BluetoothSocket socket)
+    {
+        mDataCommThread = new DataCommThread(socket);
+        mDataCommThread.start();
+    }
 
-    private class ConnectedThread extends Thread {
+    private class ConnectedThread extends Thread { //Thread for connecting the device
         //Author: YAN Tsz Kit (Student ID:54106008)
-        private final InputStream mmInStream;
-        private final OutputStream mmOutStream;
-        private boolean firstTime = true;
-        public ConnectedThread(BluetoothSocket socket)
-        {
-            InputStream tempIn = null;
-            OutputStream tempOut = null;
+        private BluetoothSocket bluetoothSocket = null;
+        private final BluetoothDevice bluetoothDevice;
 
+        public ConnectedThread(BluetoothDevice device)
+        {
+            bluetoothDevice = device;
 
             try
             {
-                tempIn = socket.getInputStream();
-                tempOut = socket.getOutputStream();
+                bluetoothSocket = createBluetoothSocket(device);
             }catch(IOException e){};
 
-            mmInStream = tempIn;
-            mmOutStream = tempOut;
+
         }
 
         public void run()
         {
-            byte[] buffer = new byte[256];
-            int bytes;
+            boolean success = false;
+            try{
+                bluetoothSocket.connect();
+                success = true;
+            }catch(IOException e){
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getBaseContext(),"Connection Failure.",Toast.LENGTH_SHORT).show();
+                    }
+                });
 
-            while(true)
-            {
-                try
-                {
-                    bytes = mmInStream.read(buffer);
-                    String helpMessage = new String(buffer, 0, bytes);
-                    bluetoothIn.obtainMessage(handlerState, bytes, -1, helpMessage).sendToTarget();
-                }catch(IOException e){
-                    break;
-                }
+                try{
+                    bluetoothSocket.close();
+                }catch(IOException ioe){};
             }
-        }
-
-        public void write(String setting)
-        {
-            byte[] buffer = setting.getBytes();
-            try
+            if(success)
             {
-                mmOutStream.write(buffer);
-                if(firstTime)
-                {
-                    Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_LONG).show();
-                    firstTime = !firstTime;
-                    icon_imageview.setImageResource(R.drawable.connected);
+                startDataCommThread(bluetoothSocket);
+                icon_imageview.setImageResource(R.drawable.connected);
                     led_switch.setEnabled(true);
                     sound_switch.setEnabled(true);
                     call_switch.setEnabled(true);
@@ -544,14 +539,102 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     info_textview.setText("Connected.");
                     info_imageview.setImageResource(R.drawable.normalinfo);
                     info_textview.setBackgroundColor(getBaseContext().getResources().getColor(R.color.grey));
-                }
-            }catch (IOException e)
-            {
-                Toast.makeText(getBaseContext(), "Connection Failure", Toast.LENGTH_LONG).show();
             }
+        }
+
+//        public void write(String setting)
+//        {
+//            byte[] buffer = setting.getBytes();
+//            try
+//            {
+//                mmOutStream.write(buffer);
+//                if(firstTime)
+//                {
+//                    Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_LONG).show();
+//                    firstTime = !firstTime;
+//                    icon_imageview.setImageResource(R.drawable.connected);
+//                    led_switch.setEnabled(true);
+//                    sound_switch.setEnabled(true);
+//                    call_switch.setEnabled(true);
+//                    sms_switch.setEnabled(true);
+//                    call_button.setEnabled(true);
+//                    sms_button.setEnabled(true);
+//                    info_textview.setText("Connected.");
+//                    info_imageview.setImageResource(R.drawable.normalinfo);
+//                    info_textview.setBackgroundColor(getBaseContext().getResources().getColor(R.color.grey));
+//                }
+//            }catch (IOException e)
+//            {
+//                Toast.makeText(getBaseContext(), "Connection Failure", Toast.LENGTH_LONG).show();
+//            }
+//        }
+
+        public void cancel()
+        {
+            try{
+                bluetoothSocket.close();
+            }catch(IOException e){};
         }
     }
 
+    private class DataCommThread extends Thread{ //Thread for data communication
+        //Author: YAN Tsz Kit (Student ID:54106008)
+        private final BluetoothSocket connectedBluetoothSocket;
+        private final InputStream connectedInputStream;
+        private final OutputStream connectedOutputStream;
+
+        public DataCommThread(BluetoothSocket socket)
+        {
+            connectedBluetoothSocket = socket;
+            InputStream in = null;
+            OutputStream out = null;
+
+            try{
+                in = socket.getInputStream();
+                out = socket.getOutputStream();
+            }catch(IOException e){};
+
+            connectedInputStream = in;
+            connectedOutputStream = out;
+        }
+
+        @Override
+        public void run()
+        {
+            byte[] buffer = new byte[1024];
+            int bytes;
+            String strRx = "";
+
+            while(true)
+            {
+                try{
+                    bytes = connectedInputStream.read(buffer);
+                    final String strReceived = new String(buffer, 0, bytes);
+                    final String strByte = String.valueOf(bytes) + " bytes received.";
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                        }
+                    });
+                }catch(IOException e){};
+            }
+        }
+
+        public void write(String data)
+        {
+            try{
+                connectedOutputStream.write(data.getBytes());
+            }catch(IOException e){};
+        }
+
+        public void cancel(){
+            try{
+                connectedBluetoothSocket.close();
+            }catch(IOException e){};
+        }
+    }
     private void permissionCheck()
     {
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE);
