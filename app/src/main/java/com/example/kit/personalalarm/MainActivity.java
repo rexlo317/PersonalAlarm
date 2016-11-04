@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static android.R.attr.button;
+import static android.R.attr.color;
 import static android.R.attr.data;
 import static android.R.attr.inputType;
 import static java.sql.Types.NULL;
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     EditText call_edittext,callno_edittext,smsno_textview,sms_edittext;
     Button call_button, sms_button;
     Switch led_switch,sound_switch,call_switch,sms_switch;
+    TextView info_textview;
 
     private ConnectedThread mConnectedThread;
 
@@ -121,6 +123,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 writeSetting();
             }
         });
+        info_textview = (TextView) findViewById(R.id.info_textview);
         sms_switch.setChecked(true);
         led_switch = (Switch) findViewById(R.id.led_switch);
         led_switch.setOnClickListener(new View.OnClickListener()
@@ -244,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     .setMessage("Your phone does not support Bluetooth")
                     .setPositiveButton("Exit", new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int which) {
-                            //System.exit(0);
+                            System.exit(0);
                         }
                     })
                     .setIcon(android.R.drawable.ic_dialog_alert)
@@ -259,12 +262,27 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             pairedDevices = bluetoothAdapter.getBondedDevices();
             final ArrayList addressList = new ArrayList();
 
+            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1);
 
-            AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
-
+            final AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
+            builderSingle.setNegativeButton(
+                    "Refresh",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            arrayAdapter.clear();
+                            pairedDevices = bluetoothAdapter.getBondedDevices();
+                            for (BluetoothDevice bt : pairedDevices) {
+                                arrayAdapter.add(bt.getName());
+                                addressList.add(bt.getAddress());
+                            }
+                            arrayAdapter.notifyDataSetChanged();
+                            builderSingle.show();
+                        }
+                    });
             builderSingle.setTitle("Select the device");
 
-            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1);
+
             for (BluetoothDevice bt : pairedDevices) {
                 arrayAdapter.add(bt.getName());
                 addressList.add(bt.getAddress());
@@ -519,12 +537,15 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_LONG).show();
                     firstTime = !firstTime;
                     icon_imageview.setImageResource(R.drawable.connected);
-                    led_switch.setEnabled(false);
-                    sound_switch.setEnabled(false);
-                    call_switch.setEnabled(false);
-                    sms_switch.setEnabled(false);
-                    call_button.setEnabled(false);
-                    sms_button.setEnabled(false);
+                    led_switch.setEnabled(true);
+                    sound_switch.setEnabled(true);
+                    call_switch.setEnabled(true);
+                    sms_switch.setEnabled(true);
+                    call_button.setEnabled(true);
+                    sms_button.setEnabled(true);
+                    info_textview.setText("Connected.");
+                    info_imageview.setImageResource(R.drawable.normalinfo);
+                    info_textview.setBackgroundColor(getBaseContext().getResources().getColor(R.color.grey));
                 }
             }catch (IOException e)
             {

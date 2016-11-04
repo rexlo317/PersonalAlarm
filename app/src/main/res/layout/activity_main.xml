@@ -169,9 +169,10 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:layout_toRightOf="@id/info_imageview"
         android:layout_alignBottom="@id/info_imageview"
-        android:text="Error Info Text"
+        android:text="Disconnected. All Settings cannot be modified."
         android:layout_marginLeft="10dp"
-        android:background="#e53935"
-        android:textColor="#ffffff"/>
+        android:background="@color/red"
+        android:textColor="@color/white"
+        android:id="@+id/info_textview"/>
 
 </RelativeLayout>
