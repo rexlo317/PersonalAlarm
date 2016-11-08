@@ -46,6 +46,7 @@ import static android.R.attr.button;
 import static android.R.attr.color;
 import static android.R.attr.configChanges;
 import static android.R.attr.data;
+import static android.R.attr.icon;
 import static android.R.attr.inputType;
 import static java.sql.Types.NULL;
 
@@ -66,6 +67,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     Switch led_switch,sound_switch,call_switch,sms_switch;
     TextView info_textview;
 
+    private ProgressDialog connecting;
+    private AlertDialog.Builder builderSingle;
+
     private ConnectedThread mConnectedThread;
     private DataCommThread mDataCommThread;
 
@@ -78,10 +82,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //Arthor: YAN Tsz Kit Student ID:54106008
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         permissionCheck();
+
+        connecting = new ProgressDialog(this);
+        builderSingle = new AlertDialog.Builder(this);
 
         bluetoothIn = new Handler(){
             public void handleMessage(android.os.Message msg)
@@ -106,6 +114,17 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         info_imageview = (ImageView) findViewById(R.id.info_imageview);
         info_imageview.setImageResource(R.drawable.errorinfo);
+        info_imageview.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if(info_textview.getVisibility() == View.VISIBLE)
+                    info_textview.setVisibility(View.INVISIBLE);
+                else
+                    info_textview.setVisibility(View.VISIBLE);
+            }
+        });
         sms_switch = (Switch) findViewById(R.id.sms_switch);
         sms_switch.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -126,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             }
         });
         info_textview = (TextView) findViewById(R.id.info_textview);
+        info_textview.setVisibility(View.INVISIBLE);
         sms_switch.setChecked(true);
         led_switch = (Switch) findViewById(R.id.led_switch);
         led_switch.setOnClickListener(new View.OnClickListener()
@@ -152,6 +172,18 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         smsno_textview.setEnabled(false);
         icon_imageview = (ImageView) findViewById(R.id.icon_imageview);
         icon_imageview.setImageResource(R.drawable.disconnected);
+        icon_imageview.setOnLongClickListener(new View.OnLongClickListener()
+        {
+            @Override
+            public boolean onLongClick(View v)
+            {
+                if(!call_switch.isEnabled())
+                    builderSingle.show();
+                else
+                    Toast.makeText(getBaseContext(), "Already Connected.", Toast.LENGTH_SHORT).show();
+                return true;
+            };
+        });
         call_switch.setChecked(true);
         sms_edittext = (EditText) findViewById(R.id.sms_edittext);
         sms_edittext.setEnabled(false);
@@ -240,6 +272,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         call_button.setEnabled(false);
         sms_button.setEnabled(false);
 
+
+
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter == null)
         {
@@ -260,11 +294,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 startActivityForResult(turnOn, 0);
             }
             pairedDevices = bluetoothAdapter.getBondedDevices();
-            final ArrayList addressList = new ArrayList();
+            final ArrayList<BluetoothDevice> deviceList = new ArrayList<BluetoothDevice>();
 
-            final ArrayAdapter<BluetoothDevice> arrayAdapter = new ArrayAdapter<BluetoothDevice>(MainActivity.this, android.R.layout.simple_list_item_1);
+            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_list_item_1);
 
-            final AlertDialog.Builder builderSingle = new AlertDialog.Builder(MainActivity.this);
+
             builderSingle.setNegativeButton(
                     "Refresh",
                     new DialogInterface.OnClickListener() {
@@ -272,21 +306,26 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         public void onClick(DialogInterface dialog, int which) {
                             arrayAdapter.clear();
                             pairedDevices = bluetoothAdapter.getBondedDevices();
+                            deviceList.clear();
                             for (BluetoothDevice bt : pairedDevices) {
-                                arrayAdapter.add(bt);
-                                addressList.add(bt.getAddress());
+                                arrayAdapter.add(bt.getName());
+                                deviceList.add(bt);
                             }
                             arrayAdapter.notifyDataSetChanged();
                             builderSingle.show();
                         }
                     });
-            builderSingle.setTitle("Select the device");
+            builderSingle.setTitle("Select HC-06");
 
 
             for (BluetoothDevice bt : pairedDevices) {
-                arrayAdapter.add(bt);
-                addressList.add(bt.getAddress());
+                arrayAdapter.add(bt.getName());
+                deviceList.add(bt);
             }
+
+
+            connecting.setMessage("Connecting...");
+            connecting.setCancelable(true);
 
             if (bluetoothSocket == null || !bluetoothSocket.isConnected()) {
                 builderSingle.setAdapter(
@@ -294,25 +333,21 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                String deviceAddress = addressList.get(which).toString();
 
-                                bluetoothDevice = arrayAdapter.getItem(which);
+
+                                bluetoothDevice = deviceList.get(which);
                                 try {
 
+                                    connecting.show();
                                     bluetoothSocket = createBluetoothSocket(bluetoothDevice);
 
                                 } catch (IOException e) {
 
                                     Toast.makeText(getBaseContext(), "Socket creation failed", Toast.LENGTH_LONG).show();
-
+                                    connecting.cancel();
                                 }
-
-
-
                                 mConnectedThread = new ConnectedThread(bluetoothDevice);
                                 mConnectedThread.start();
-
-
                             }
                         });
                 builderSingle.show();
@@ -331,26 +366,25 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private void writeSetting()
     {//Author: YAN Tsz Kit (Student ID:54106008)
         try {
+            int settingCode = 0;
             FileOutputStream fOut = openFileOutput("config",MODE_WORLD_READABLE);
             if(led_switch.isChecked())
             {
                 fOut.write("T".getBytes());
-                mDataCommThread.write("T");
+                settingCode += 1;
             }
             else
             {
                 fOut.write("F".getBytes());
-                mDataCommThread.write("F");
             }
             if(sound_switch.isChecked())
             {
                 fOut.write("T".getBytes());
-                mDataCommThread.write("T");
+                settingCode += 2;
             }
             else
             {
                 fOut.write("F".getBytes());
-                mDataCommThread.write("F");
             }
             if(call_switch.isChecked())
                 fOut.write("T".getBytes());
@@ -365,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             fOut.write(sms_edittext.getText().toString().getBytes());
             fOut.write("M".getBytes());
             fOut.close();
-
+            mDataCommThread.write(String.valueOf(settingCode));
         }
         catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
@@ -511,6 +545,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        connecting.cancel();
                         Toast.makeText(getBaseContext(),"Connection Failure.",Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -525,6 +560,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        writeSetting();
                         icon_imageview.setImageResource(R.drawable.connected);
                         led_switch.setEnabled(true);
                         sound_switch.setEnabled(true);
@@ -535,38 +571,14 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         info_textview.setText("Connected.");
                         info_imageview.setImageResource(R.drawable.normalinfo);
                         info_textview.setBackgroundColor(getBaseContext().getResources().getColor(R.color.grey));
+                        Toast.makeText(getBaseContext(), "Device Connected.", Toast.LENGTH_SHORT).show();
+                        connecting.cancel();
                     }
                 });
 
             }
         }
 
-//        public void write(String setting)
-//        {
-//            byte[] buffer = setting.getBytes();
-//            try
-//            {
-//                mmOutStream.write(buffer);
-//                if(firstTime)
-//                {
-//                    Toast.makeText(getBaseContext(), "Device Connected", Toast.LENGTH_LONG).show();
-//                    firstTime = !firstTime;
-//                    icon_imageview.setImageResource(R.drawable.connected);
-//                    led_switch.setEnabled(true);
-//                    sound_switch.setEnabled(true);
-//                    call_switch.setEnabled(true);
-//                    sms_switch.setEnabled(true);
-//                    call_button.setEnabled(true);
-//                    sms_button.setEnabled(true);
-//                    info_textview.setText("Connected.");
-//                    info_imageview.setImageResource(R.drawable.normalinfo);
-//                    info_textview.setBackgroundColor(getBaseContext().getResources().getColor(R.color.grey));
-//                }
-//            }catch (IOException e)
-//            {
-//                Toast.makeText(getBaseContext(), "Connection Failure", Toast.LENGTH_LONG).show();
-//            }
-//        }
 
         public void cancel()
         {
@@ -614,7 +626,11 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            Toast.makeText(getBaseContext(),strReceived,Toast.LENGTH_SHORT).show();
+                            if(strReceived == "H")
+                            {
+                                sendSMS(sms_edittext.getText().toString(),"HELP!");
+                                call(call_edittext.getText().toString());
+                            }
                         }
                     });
                 }catch(IOException e){};
