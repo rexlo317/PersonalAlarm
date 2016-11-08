@@ -5,6 +5,9 @@ Current State
 - Implemented the Bluetooth code, connection worked, data communication worked.
 - Call method implemented, public void call(String phoneNumber);
 - Send Msg function implemented, public void sendSMS(String phoneNumber, String msg);
-- Location function not tested
-- Dialog pop up to select device
-- Bluetooth only set to "HC-06"
+- Dialog pop up to select device on START and Long Press disconnect ICON to pop up Select Dialog
+- Added Loading Dialog
+- settingCode for Hardware ('3': LED and Sound ON; '2':Sound ON only; '1':LED ON only; '0':ALL OFF)
+
+Missing Feature
+- Get phone's location
