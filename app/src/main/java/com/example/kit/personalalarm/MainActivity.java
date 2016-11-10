@@ -628,7 +628,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         public void run() {
                             if(strReceived == "H")
                             {
+                                if(sms_switch.isChecked())
                                 sendSMS(sms_edittext.getText().toString(),"HELP!");
+                                if(call_switch.isChecked())
                                 call(call_edittext.getText().toString());
                             }
                         }
