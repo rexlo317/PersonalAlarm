@@ -57,8 +57,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private BluetoothDevice bluetoothDevice = null;
     private BluetoothSocket bluetoothSocket = null;
     private Set<BluetoothDevice> pairedDevices;
-    private Handler bluetoothIn;
-    final int handlerState = 0;
+
     private StringBuilder recDataString = new StringBuilder();
 
     ImageView icon_imageview,info_imageview;
@@ -90,27 +89,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
         connecting = new ProgressDialog(this);
         builderSingle = new AlertDialog.Builder(this);
-
-        bluetoothIn = new Handler(){
-            public void handleMessage(android.os.Message msg)
-            {
-                if(msg.what == handlerState)
-                {
-                    String helpmessage = (String) msg.obj;
-                    recDataString.append(helpmessage);
-                    if(recDataString.equals("HELP"))
-                    {
-                        if(call_switch.isChecked())
-                            call(call_edittext.toString());
-                        if(sms_switch.isChecked())
-                            sendSMS(sms_edittext.toString(),"HELP!");
-                    }
-
-                    recDataString.delete(0, recDataString.length());
-                }
-
-            }
-        };
 
         info_imageview = (ImageView) findViewById(R.id.info_imageview);
         info_imageview.setImageResource(R.drawable.errorinfo);
@@ -626,12 +604,12 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(strReceived == "H")
+                            if(strReceived.equals("H"))
                             {
                                 if(sms_switch.isChecked())
-                                sendSMS(sms_edittext.getText().toString(),"HELP!");
+                                    sendSMS(sms_edittext.getText().toString(),"HELP!");
                                 if(call_switch.isChecked())
-                                call(call_edittext.getText().toString());
+                                    call(call_edittext.getText().toString());
                             }
                         }
                     });
