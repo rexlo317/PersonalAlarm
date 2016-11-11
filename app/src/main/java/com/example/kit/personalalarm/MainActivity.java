@@ -72,6 +72,9 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     private ConnectedThread mConnectedThread;
     private DataCommThread mDataCommThread;
 
+    private Handler bluetoothIn;
+    final int handlerState = 0;
+
 
     // SPP UUID service - this should work for most devices
 
@@ -86,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         setContentView(R.layout.activity_main);
 
         permissionCheck();
+
 
         connecting = new ProgressDialog(this);
         builderSingle = new AlertDialog.Builder(this);
@@ -334,6 +338,13 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         }
 
     }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+    };
+
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         return  device.createRfcommSocketToServiceRecord(BTMODULEUUID);
@@ -604,7 +615,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if(strReceived.equals("H"))
+                            if(strReceived.contains("H"))
                             {
                                 if(sms_switch.isChecked())
                                     sendSMS(sms_edittext.getText().toString(),"HELP!");
@@ -614,6 +625,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         }
                     });
                 }catch(IOException e){};
+
             }
         }
 
