@@ -11,3 +11,5 @@ Current State
 
 Missing Feature
 - Get phone's location
+- Background Process
+- Information text
