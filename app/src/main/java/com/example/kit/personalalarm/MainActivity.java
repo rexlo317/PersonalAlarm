@@ -50,9 +50,14 @@ import static android.R.attr.icon;
 import static android.R.attr.inputType;
 import static java.sql.Types.NULL;
 
-public class MainActivity extends AppCompatActivity implements LocationListener{ //Author: YAN Tsz Kit (Student ID:54106008)
-    protected LocationManager locationManager;
-    protected LocationListener locationListener;
+public class MainActivity extends AppCompatActivity  { //Author: YAN Tsz Kit (Student ID:54106008)
+    /*protected LocationManager locationManager;
+    protected LocationListener locationListener;*/
+    private GPS gps;
+    private double lat;
+    private double lon;
+    //
+
     private BluetoothAdapter bluetoothAdapter = null;
     private BluetoothDevice bluetoothDevice = null;
     private BluetoothSocket bluetoothSocket = null;
@@ -62,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
     ImageView icon_imageview,info_imageview;
     EditText call_edittext,callno_edittext,smsno_textview,sms_edittext;
-    Button call_button, sms_button;
+    Button call_button, sms_button,gps_button;
     Switch led_switch,sound_switch,call_switch,sms_switch;
     TextView info_textview;
 
@@ -126,6 +131,32 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                 writeSetting();
             }
         });
+        /*
+        gps_button = (Button) findViewById(R.id.gps_button);
+        gps_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                gps = new GPS(MainActivity.this);
+
+                if(gps.isgetLocation()){
+
+                    lon = gps.getLongitude();
+                    lat = gps.getLatitude();
+
+                    Toast.makeText(getBaseContext(),"longitude:"+lon+" latitude:"+lat,Toast.LENGTH_SHORT).show();
+
+                    sendSMS(sms_edittext.getText().toString(),"HELP! I'm at "+"https://www.google.com.hk/maps/@"+Double.toString(lat)+","+Double.toString(lon)+",21z?hl=zh-TW&authuser=0+");
+
+                }
+                else
+                {
+                    gps.showSettingsAlert();
+                }
+            }
+                                      }
+                );
+            */
         info_textview = (TextView) findViewById(R.id.info_textview);
         info_textview.setVisibility(View.INVISIBLE);
         sms_switch.setChecked(true);
@@ -527,6 +558,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
         public void run()
         {
             boolean success = false;
+
             try{
                 bluetoothSocket.connect();
                 success = true;
@@ -604,9 +636,10 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
             byte[] buffer = new byte[1024];
             int bytes;
             String strRx = "";
-
             while(true)
             {
+
+
                 try{
                     bytes = connectedInputStream.read(buffer);
                     final String strReceived = new String(buffer, 0, bytes);
@@ -617,8 +650,22 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
                         public void run() {
                             if(strReceived.contains("H"))
                             {
+                            //GPS
+                            gps = new GPS(MainActivity.this);
+
+                            if(gps.isgetLocation()){
+
+                                lon = gps.getLongitude();
+                                lat = gps.getLatitude();
+                            }
+                            else
+                            {
+                                gps.showSettingsAlert();
+                            }
+                            //GPS
+
                                 if(sms_switch.isChecked())
-                                    sendSMS(sms_edittext.getText().toString(),"HELP!");
+                                    sendSMS(sms_edittext.getText().toString(),"HELP! I'm at "+"https://www.google.com.hk/maps/@"+Double.toString(lat)+","+Double.toString(lon)+",21z?hl=zh-TW&authuser=0+");
                                 if(call_switch.isChecked())
                                     call(call_edittext.getText().toString());
                             }
@@ -678,7 +725,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
     }
 
 
-
+/*
     private void getLocation()
     {
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -712,6 +759,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener{
 
     }
 
-
+*/
 
 }
