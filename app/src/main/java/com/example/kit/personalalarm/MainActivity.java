@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity  { //Author: YAN Tsz Kit (St
 
     ImageView icon_imageview,info_imageview;
     EditText call_edittext,callno_edittext,smsno_textview,sms_edittext;
-    Button call_button, sms_button,gps_button;
+    Button call_button, sms_button,gps_button, stop_button;
     Switch led_switch,sound_switch,call_switch,sms_switch;
     TextView info_textview;
 
@@ -131,6 +131,16 @@ public class MainActivity extends AppCompatActivity  { //Author: YAN Tsz Kit (St
                 writeSetting();
             }
         });
+
+        stop_button = (Button) findViewById(R.id.STOP);
+        stop_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v)
+            {
+                mDataCommThread.write("4");
+            }
+        });
+
         /*
         gps_button = (Button) findViewById(R.id.gps_button);
         gps_button.setOnClickListener(new View.OnClickListener(){
@@ -220,6 +230,7 @@ public class MainActivity extends AppCompatActivity  { //Author: YAN Tsz Kit (St
                 writeSetting();
             }
         });
+
         call_button = (Button) findViewById(R.id.call_button);
         call_button.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -665,7 +676,9 @@ public class MainActivity extends AppCompatActivity  { //Author: YAN Tsz Kit (St
                             //GPS
 
                                 if(sms_switch.isChecked())
-                                    sendSMS(sms_edittext.getText().toString(),"HELP! I'm at "+"https://www.google.com.hk/maps/@"+Double.toString(lat)+","+Double.toString(lon)+",21z?hl=zh-TW&authuser=0+");
+                                    sendSMS(sms_edittext.getText().toString(),"HELP! I'm at "+
+                                            "https://www.google.com.hk/maps?q="+Double.toString(lat)+
+                                            ","+Double.toString(lon)+"&z=21");//?hl=zh-TW&authuser=0+
                                 if(call_switch.isChecked())
                                     call(call_edittext.getText().toString());
                             }
